@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,33 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, CheckCircle, AlertCircle, Pen, Book, Camera, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface WebhookResponse {
+  "Project Name": string;
+  "Keyword ID": string;
+  "Keyword URL": string;
+  "Date Created": string;
+  "Project ID": string;
+  "Folder ID": string;
+  "Folder URL": string;
+  "Video ID": string;
+  "Video URL": string;
+  "Image ID": string;
+  "Image URL": string;
+  "ScriptDoc ID": string;
+  "ScriptDoc URL": string;
+  "Opening Hook": string;
+  "Part 1": string;
+  "Part 2": string;
+  "Part 3": string;
+  "Vocab 1": string;
+  "Vocab 2": string;
+  "Vocab 3": string;
+  "Vocab 4": string;
+  "Vocab 5": string;
+  "Grammar Topic": string;
+}
 
 interface WorkflowData {
   projectName: string;
@@ -113,8 +139,13 @@ const PodcastWorkflow: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      let data = await response.json();
       console.log('API Response:', data);
+
+      // Handle array response by taking the first item
+      if (Array.isArray(data) && data.length > 0) {
+        data = data[0];
+      }
 
       if (data.status === 'error') {
         throw new Error(data.message || 'Unknown error occurred');
@@ -178,12 +209,27 @@ const PodcastWorkflow: React.FC = () => {
         'Project initialized and outline created!'
       );
 
-      if (response.data) {
+      // Handle the new response format
+      if (response) {
+        const webhookResponse = response as unknown as WebhookResponse;
+        
         setWorkflowData(prev => ({
           ...prev,
-          driveFolderId: response.data.driveFolderId,
-          mainLogFileId: response.data.mainLogFileId,
-          outline: response.data.outline || prev.outline
+          driveFolderId: webhookResponse["Folder ID"] || prev.driveFolderId,
+          mainLogFileId: webhookResponse["Keyword ID"] || prev.mainLogFileId,
+          outline: {
+            openingHook: webhookResponse["Opening Hook"] || '',
+            part1_Problem: webhookResponse["Part 1"] || '',
+            part2_Cause: webhookResponse["Part 2"] || '',
+            part3_Solution: webhookResponse["Part 3"] || '',
+            suggestedVocab: [
+              webhookResponse["Vocab 1"],
+              webhookResponse["Vocab 2"],
+              webhookResponse["Vocab 3"],
+              webhookResponse["Vocab 4"],
+              webhookResponse["Vocab 5"]
+            ].filter(Boolean)
+          }
         }));
         setCurrentStep('outline');
       }
@@ -317,6 +363,36 @@ const PodcastWorkflow: React.FC = () => {
     });
     setCurrentStep('name');
     localStorage.removeItem('podcastWorkflowData');
+  };
+
+  const renderLoadingContent = () => {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 space-y-6">
+        <div className="relative w-32 h-32">
+          {/* Spinning outer circle */}
+          <div className="absolute inset-0 rounded-full border-4 border-t-blue-600 border-blue-200 animate-spin"></div>
+          
+          {/* Central icon */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Pen className="h-12 w-12 text-blue-600 animate-pulse" />
+          </div>
+        </div>
+        
+        <div className="space-y-2 text-center">
+          <h3 className="text-xl font-medium text-gray-800">{loadingMessage}</h3>
+          <p className="text-gray-500">
+            Please wait while we process your content...
+          </p>
+        </div>
+
+        {/* Loading placeholder skeletons */}
+        <div className="w-full max-w-md space-y-3">
+          <Skeleton className="h-4 w-3/4 mx-auto" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6 mx-auto" />
+        </div>
+      </div>
+    );
   };
 
   const renderStepContent = () => {
@@ -634,14 +710,7 @@ const PodcastWorkflow: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                <p className="text-gray-600 text-center">{loadingMessage}</p>
-              </div>
-            ) : (
-              renderStepContent()
-            )}
+            {isLoading ? renderLoadingContent() : renderStepContent()}
           </CardContent>
         </Card>
       </div>
