@@ -150,8 +150,12 @@ const PodcastWorkflow: React.FC = () => {
       // Special handling for specific endpoints
       // For RunPromt endpoint, we want to keep the array structure intact
       if (url.includes('RunPromt')) {
-        console.log('Preserving array structure for RunPromt endpoint');
-        // Do not modify the array structure
+        console.log('Preserving array structure for RunPromt endpoint', data);
+        // If data is not an array but contains data property that is an array, extract it
+        if (!Array.isArray(data) && data.data && Array.isArray(data.data)) {
+          console.log('Extracting data array from response object');
+          data = data.data;
+        }
       } 
       // For other endpoints, handle arrays by taking the first item if needed
       else if (Array.isArray(data) && data.length > 0) {
@@ -297,23 +301,60 @@ const PodcastWorkflow: React.FC = () => {
         }
       };
 
+      console.log('Sending payload to RunPromt endpoint:', payload);
+      
       const response = await handleApiCall(
         'https://n8n.chichung.studio/webhook-test/RunPromt',
         payload,
         'Script has been generated!'
       );
 
-      console.log('Script generation response:', response);
+      console.log('Script generation response received:', response);
 
       // Handle the response, which should be an array of script parts
       if (Array.isArray(response)) {
-        console.log('Script data received:', response);
+        console.log('Script data is an array of length:', response.length);
         
-        setWorkflowData(prev => ({
-          ...prev,
-          script: response
-        }));
-        setCurrentStep('script');
+        // Ensure each object in the array has the expected format
+        const validScriptData = response.every(item => {
+          const keys = Object.keys(item);
+          return keys.length === 1 && typeof item[keys[0]] === 'string';
+        });
+
+        if (validScriptData) {
+          console.log('Script data format is valid');
+          setWorkflowData(prev => ({
+            ...prev,
+            script: response
+          }));
+          setCurrentStep('script');
+        } else {
+          console.error('Invalid script data format:', response);
+          toast({
+            title: "Warning",
+            description: "Received script data in an unexpected format. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else if (response && typeof response === 'object') {
+        // Try to extract script data from response if it's not directly an array
+        console.log('Response is not an array, checking for script data in the object');
+        
+        if (response.data && Array.isArray(response.data)) {
+          console.log('Found script data array in response.data:', response.data);
+          setWorkflowData(prev => ({
+            ...prev,
+            script: response.data
+          }));
+          setCurrentStep('script');
+        } else {
+          console.error('Could not find array data in response:', response);
+          toast({
+            title: "Warning",
+            description: "Received unexpected response format. Expected an array of script sections.",
+            variant: "destructive",
+          });
+        }
       } else {
         console.error('Expected array response for script but got:', response);
         toast({
@@ -323,8 +364,12 @@ const PodcastWorkflow: React.FC = () => {
         });
       }
     } catch (error) {
-      // Error already handled in handleApiCall
       console.error('Failed to create script:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate script. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
       setLoadingMessage('');
