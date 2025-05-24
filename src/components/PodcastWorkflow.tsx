@@ -147,8 +147,13 @@ const PodcastWorkflow: React.FC = () => {
       let data = await response.json();
       console.log('API Response:', data);
 
-      // Handle array response by taking the first item
-      if (Array.isArray(data) && data.length > 0) {
+      // Special handling for specific endpoints
+      // For RunPromt endpoint, we want to keep the array structure intact
+      if (url.includes('RunPromt')) {
+        // Do not modify the array structure
+      } 
+      // For other endpoints, handle arrays by taking the first item if needed
+      else if (Array.isArray(data) && data.length > 0) {
         data = data[0];
       }
 
@@ -296,18 +301,20 @@ const PodcastWorkflow: React.FC = () => {
         'Script has been generated!'
       );
 
-      // Handle the new response format - an array of objects with single key-value pairs
+      // Handle the response, which should be an array of script parts
       if (Array.isArray(response)) {
+        console.log('Script data received:', response);
+        
         setWorkflowData(prev => ({
           ...prev,
           script: response
         }));
         setCurrentStep('script');
       } else {
-        console.error('Expected array response but got:', response);
+        console.error('Expected array response for script but got:', response);
         toast({
           title: "Warning",
-          description: "Received unexpected response format from server",
+          description: "Received unexpected response format from server. Expected an array of script sections.",
           variant: "destructive",
         });
       }
