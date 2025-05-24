@@ -64,10 +64,12 @@ export interface WorkflowData {
   }>;
 }
 
-export type WorkflowStep = 'name' | 'input' | 'outline' | 'script' | 'media' | 'complete';
+// Renamed from WorkflowStep to WorkflowStepType for the string union
+export type WorkflowStepType = 'name' | 'input' | 'outline' | 'script' | 'media' | 'complete';
 
-export interface WorkflowStep {
-  key: WorkflowStep;
+// Renamed from WorkflowStep to WorkflowStepInfo for the interface
+export interface WorkflowStepInfo {
+  key: WorkflowStepType;
   title: string;
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
 }

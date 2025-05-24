@@ -12,7 +12,7 @@ import { ScriptStep } from './podcast/steps/ScriptStep';
 import { MediaStep } from './podcast/steps/MediaStep';
 import { CompleteStep } from './podcast/steps/CompleteStep';
 
-import { WorkflowStep, WorkflowData, WebhookResponse, ScriptPartObject } from '@/types/podcast';
+import { WorkflowStepType, WorkflowData, WebhookResponse, ScriptPartObject } from '@/types/podcast';
 
 // We'll handle API calls directly in this component since they're specific to the workflow process
 const handleApiCall = async (url: string, payload: any, successMessage: string) => {
@@ -74,7 +74,7 @@ const handleApiCall = async (url: string, payload: any, successMessage: string) 
 };
 
 const PodcastWorkflow: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState<WorkflowStep>('name');
+  const [currentStep, setCurrentStep] = useState<WorkflowStepType>('name');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [showProjectDetails, setShowProjectDetails] = useState(false);
