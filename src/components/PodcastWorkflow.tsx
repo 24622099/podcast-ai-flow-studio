@@ -35,6 +35,10 @@ interface WebhookResponse {
   "Grammar Topic": string;
 }
 
+interface ScriptPartObject {
+  [key: string]: string;
+}
+
 interface WorkflowData {
   projectName: string;
   initialContent: string;
@@ -63,15 +67,7 @@ interface WorkflowData {
     part3_Solution: string;
     suggestedVocab: string[];
   };
-  script?: {
-    segment_hook: string;
-    segment_part1_problem: string;
-    segment_part2_cause: string;
-    segment_part3_solution: string;
-    segment_vocab_explanation: string;
-    segment_grammar_explanation: string;
-    segment_summary: string;
-  };
+  script?: ScriptPartObject[];
   imagePrompts?: Array<{
     id: string;
     prompt: string;
@@ -96,15 +92,7 @@ const PodcastWorkflow: React.FC = () => {
       part3_Solution: '',
       suggestedVocab: []
     },
-    script: {
-      segment_hook: '',
-      segment_part1_problem: '',
-      segment_part2_cause: '',
-      segment_part3_solution: '',
-      segment_vocab_explanation: '',
-      segment_grammar_explanation: '',
-      segment_summary: ''
-    },
+    script: [],
     imagePrompts: []
   });
 
@@ -308,12 +296,20 @@ const PodcastWorkflow: React.FC = () => {
         'Script has been generated!'
       );
 
-      if (response.data && response.data.script) {
+      // Handle the new response format - an array of objects with single key-value pairs
+      if (Array.isArray(response)) {
         setWorkflowData(prev => ({
           ...prev,
-          script: response.data.script
+          script: response
         }));
         setCurrentStep('script');
+      } else {
+        console.error('Expected array response but got:', response);
+        toast({
+          title: "Warning",
+          description: "Received unexpected response format from server",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       // Error already handled in handleApiCall
@@ -397,15 +393,7 @@ const PodcastWorkflow: React.FC = () => {
         part3_Solution: '',
         suggestedVocab: []
       },
-      script: {
-        segment_hook: '',
-        segment_part1_problem: '',
-        segment_part2_cause: '',
-        segment_part3_solution: '',
-        segment_vocab_explanation: '',
-        segment_grammar_explanation: '',
-        segment_summary: ''
-      },
+      script: [],
       imagePrompts: []
     });
     setCurrentStep('name');
@@ -663,21 +651,31 @@ const PodcastWorkflow: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="grid gap-4">
-              {Object.entries(workflowData.script || {}).map(([key, value]) => (
-                <div key={key} className="space-y-2">
-                  <label className="text-sm font-medium capitalize">
-                    {key.replace(/_/g, ' ')}
-                  </label>
-                  <Textarea
-                    value={value}
-                    onChange={(e) => setWorkflowData(prev => ({
-                      ...prev,
-                      script: { ...prev.script!, [key]: e.target.value }
-                    }))}
-                    className="min-h-[100px]"
-                  />
-                </div>
-              ))}
+              {workflowData.script && workflowData.script.map((scriptPart, index) => {
+                // Each object has only one key-value pair
+                const key = Object.keys(scriptPart)[0];
+                const value = scriptPart[key];
+                
+                return (
+                  <div key={index} className="space-y-2">
+                    <label className="text-sm font-medium capitalize">
+                      {key}
+                    </label>
+                    <Textarea
+                      value={value}
+                      onChange={(e) => {
+                        const newScript = [...(workflowData.script || [])];
+                        newScript[index] = { [key]: e.target.value };
+                        setWorkflowData(prev => ({
+                          ...prev,
+                          script: newScript
+                        }));
+                      }}
+                      className="min-h-[100px]"
+                    />
+                  </div>
+                );
+              })}
             </div>
             <Button 
               onClick={handleConfirmScript} 
