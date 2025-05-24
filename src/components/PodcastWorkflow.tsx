@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { Loader2, CheckCircle, AlertCircle, Pen, Book, Camera, FileText } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Pen, Book, Camera, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface WebhookResponse {
   "Project Name": string;
@@ -40,6 +41,21 @@ interface WorkflowData {
   grammarPoint: string;
   driveFolderId?: string;
   mainLogFileId?: string;
+  projectDetails?: {
+    projectName: string;
+    keywordId: string;
+    keywordUrl: string;
+    dateCreated: string;
+    projectId: string;
+    folderId: string;
+    folderUrl: string;
+    videoId: string;
+    videoUrl: string;
+    imageId: string;
+    imageUrl: string;
+    scriptDocId: string;
+    scriptDocUrl: string;
+  };
   outline?: {
     openingHook: string;
     part1_Problem: string;
@@ -68,6 +84,7 @@ const PodcastWorkflow: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<WorkflowStep>('name');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [showProjectDetails, setShowProjectDetails] = useState(false);
   const [workflowData, setWorkflowData] = useState<WorkflowData>({
     projectName: '',
     initialContent: '',
@@ -217,6 +234,21 @@ const PodcastWorkflow: React.FC = () => {
           ...prev,
           driveFolderId: webhookResponse["Folder ID"] || prev.driveFolderId,
           mainLogFileId: webhookResponse["Keyword ID"] || prev.mainLogFileId,
+          projectDetails: {
+            projectName: webhookResponse["Project Name"],
+            keywordId: webhookResponse["Keyword ID"],
+            keywordUrl: webhookResponse["Keyword URL"],
+            dateCreated: webhookResponse["Date Created"],
+            projectId: webhookResponse["Project ID"],
+            folderId: webhookResponse["Folder ID"],
+            folderUrl: webhookResponse["Folder URL"],
+            videoId: webhookResponse["Video ID"],
+            videoUrl: webhookResponse["Video URL"],
+            imageId: webhookResponse["Image ID"],
+            imageUrl: webhookResponse["Image URL"],
+            scriptDocId: webhookResponse["ScriptDoc ID"],
+            scriptDocUrl: webhookResponse["ScriptDoc URL"],
+          },
           outline: {
             openingHook: webhookResponse["Opening Hook"] || '',
             part1_Problem: webhookResponse["Part 1"] || '',
@@ -246,12 +278,27 @@ const PodcastWorkflow: React.FC = () => {
     setLoadingMessage('Generating detailed script...');
 
     try {
+      // Include all project details in the payload
       const payload = {
         action: "createScript",
         payload: {
           driveFolderId: workflowData.driveFolderId,
           editedOutline: workflowData.outline,
-          grammarPoint: workflowData.grammarPoint
+          grammarPoint: workflowData.grammarPoint,
+          // Include all project details
+          "Project Name": workflowData.projectDetails?.projectName,
+          "Keyword ID": workflowData.projectDetails?.keywordId,
+          "Keyword URL": workflowData.projectDetails?.keywordUrl,
+          "Date Created": workflowData.projectDetails?.dateCreated,
+          "Project ID": workflowData.projectDetails?.projectId,
+          "Folder ID": workflowData.projectDetails?.folderId,
+          "Folder URL": workflowData.projectDetails?.folderUrl,
+          "Video ID": workflowData.projectDetails?.videoId,
+          "Video URL": workflowData.projectDetails?.videoUrl,
+          "Image ID": workflowData.projectDetails?.imageId,
+          "Image URL": workflowData.projectDetails?.imageUrl,
+          "ScriptDoc ID": workflowData.projectDetails?.scriptDocId,
+          "ScriptDoc URL": workflowData.projectDetails?.scriptDocUrl,
         }
       };
 
@@ -392,6 +439,74 @@ const PodcastWorkflow: React.FC = () => {
           <Skeleton className="h-4 w-5/6 mx-auto" />
         </div>
       </div>
+    );
+  };
+
+  const renderProjectDetailsSection = () => {
+    if (!workflowData.projectDetails) return null;
+
+    const details = [
+      { label: "Project Name", value: workflowData.projectDetails.projectName },
+      { label: "Project ID", value: workflowData.projectDetails.projectId },
+      { label: "Date Created", value: workflowData.projectDetails.dateCreated },
+      { label: "Folder ID", value: workflowData.projectDetails.folderId },
+      { label: "Keyword ID", value: workflowData.projectDetails.keywordId },
+      { label: "Video ID", value: workflowData.projectDetails.videoId },
+      { label: "Image ID", value: workflowData.projectDetails.imageId },
+      { label: "ScriptDoc ID", value: workflowData.projectDetails.scriptDocId }
+    ];
+
+    const links = [
+      { label: "Folder URL", value: workflowData.projectDetails.folderUrl },
+      { label: "Keyword URL", value: workflowData.projectDetails.keywordUrl },
+      { label: "Video URL", value: workflowData.projectDetails.videoUrl },
+      { label: "Image URL", value: workflowData.projectDetails.imageUrl },
+      { label: "ScriptDoc URL", value: workflowData.projectDetails.scriptDocUrl }
+    ];
+
+    return (
+      <Collapsible
+        className="mt-4 mb-6 border rounded-lg p-2"
+        open={showProjectDetails}
+        onOpenChange={setShowProjectDetails}
+      >
+        <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-left text-gray-700 hover:bg-gray-50 rounded-md">
+          Project Information
+          {showProjectDetails ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </CollapsibleTrigger>
+        <CollapsibleContent className="px-4 pt-2 pb-4 space-y-4">
+          <div className="grid grid-cols-2 gap-2">
+            {details.map((item) => (
+              <div key={item.label} className="text-xs">
+                <span className="font-medium text-gray-700">{item.label}:</span>{" "}
+                <span className="text-gray-600">{item.value}</span>
+              </div>
+            ))}
+          </div>
+          <div className="border-t pt-2">
+            <h4 className="font-medium text-sm mb-1">Project Links</h4>
+            <div className="space-y-1">
+              {links.map((link) => (
+                <div key={link.label} className="text-xs">
+                  <span className="font-medium text-gray-700">{link.label}:</span>{" "}
+                  <a
+                    href={link.value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline break-all"
+                  >
+                    {link.value}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     );
   };
 
@@ -700,6 +815,9 @@ const PodcastWorkflow: React.FC = () => {
             })}
           </div>
         </div>
+
+        {/* Project Information (visible after step 1) */}
+        {workflowData.projectDetails && currentStep !== 'name' && renderProjectDetailsSection()}
 
         {/* Main Content */}
         <Card className="shadow-lg">
