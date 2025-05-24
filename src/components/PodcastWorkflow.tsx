@@ -150,10 +150,12 @@ const PodcastWorkflow: React.FC = () => {
       // Special handling for specific endpoints
       // For RunPromt endpoint, we want to keep the array structure intact
       if (url.includes('RunPromt')) {
+        console.log('Preserving array structure for RunPromt endpoint');
         // Do not modify the array structure
       } 
       // For other endpoints, handle arrays by taking the first item if needed
       else if (Array.isArray(data) && data.length > 0) {
+        console.log('Processing non-RunPromt endpoint, taking first item from array');
         data = data[0];
       }
 
@@ -301,6 +303,8 @@ const PodcastWorkflow: React.FC = () => {
         'Script has been generated!'
       );
 
+      console.log('Script generation response:', response);
+
       // Handle the response, which should be an array of script parts
       if (Array.isArray(response)) {
         console.log('Script data received:', response);
@@ -320,6 +324,7 @@ const PodcastWorkflow: React.FC = () => {
       }
     } catch (error) {
       // Error already handled in handleApiCall
+      console.error('Failed to create script:', error);
     } finally {
       setIsLoading(false);
       setLoadingMessage('');
@@ -658,37 +663,43 @@ const PodcastWorkflow: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="grid gap-4">
-              {workflowData.script && workflowData.script.map((scriptPart, index) => {
-                // Each object has only one key-value pair
-                const key = Object.keys(scriptPart)[0];
-                const value = scriptPart[key];
-                
-                return (
-                  <div key={index} className="space-y-2">
-                    <label className="text-sm font-medium capitalize">
-                      {key}
-                    </label>
-                    <Textarea
-                      value={value}
-                      onChange={(e) => {
-                        const newScript = [...(workflowData.script || [])];
-                        newScript[index] = { [key]: e.target.value };
-                        setWorkflowData(prev => ({
-                          ...prev,
-                          script: newScript
-                        }));
-                      }}
-                      className="min-h-[100px]"
-                    />
-                  </div>
-                );
-              })}
+              {Array.isArray(workflowData.script) && workflowData.script.length > 0 ? (
+                workflowData.script.map((scriptPart, index) => {
+                  // Each object should have only one key-value pair
+                  const key = Object.keys(scriptPart)[0];
+                  const value = scriptPart[key];
+                  
+                  return (
+                    <div key={index} className="space-y-2">
+                      <label className="text-sm font-medium capitalize">
+                        {key}
+                      </label>
+                      <Textarea
+                        value={value}
+                        onChange={(e) => {
+                          const newScript = [...(workflowData.script || [])];
+                          newScript[index] = { [key]: e.target.value };
+                          setWorkflowData(prev => ({
+                            ...prev,
+                            script: newScript
+                          }));
+                        }}
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="p-4 text-center text-gray-500">
+                  No script content available. Please generate a script first.
+                </div>
+              )}
             </div>
             <Button 
               onClick={handleConfirmScript} 
               className="w-full" 
               size="lg" 
-              disabled={isLoading}
+              disabled={isLoading || !workflowData.script || workflowData.script.length === 0}
             >
               {isLoading ? (
                 <>
