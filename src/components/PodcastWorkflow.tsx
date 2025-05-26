@@ -140,7 +140,14 @@ const PodcastWorkflow: React.FC = () => {
   };
 
   const handleInitializeProject = async () => {
+    console.log('=== CREATE OUTLINE BUTTON CLICKED ===');
+    console.log('Current workflowData:', workflowData);
+    console.log('Project name:', workflowData.projectName);
+    console.log('Initial content:', workflowData.initialContent);
+    console.log('Grammar point:', workflowData.grammarPoint);
+
     if (!workflowData.initialContent.trim()) {
+      console.log('ERROR: No initial content provided');
       toast({
         title: "Error",
         description: "Please enter initial content",
@@ -152,25 +159,44 @@ const PodcastWorkflow: React.FC = () => {
     setIsLoading(true);
     setLoadingMessage('Initializing project and creating outline...');
 
+    const payload = {
+      action: "initializeProjectAndCreateOutline",
+      payload: {
+        projectName: workflowData.projectName,
+        initialContent: workflowData.initialContent,
+        grammarPoint: workflowData.grammarPoint
+      }
+    };
+
+    console.log('=== SENDING TO WEBHOOK ===');
+    console.log('URL: https://n8n.chichung.studio/webhook-test/NewProject_1');
+    console.log('Payload:', JSON.stringify(payload, null, 2));
+
     try {
-      const payload = {
-        action: "initializeProjectAndCreateOutline",
-        payload: {
-          projectName: workflowData.projectName,
-          initialContent: workflowData.initialContent,
-          grammarPoint: workflowData.grammarPoint
-        }
-      };
+      const response = await fetch('https://n8n.chichung.studio/webhook-test/NewProject_1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
 
-      const response = await handleApiCall(
-        'https://n8n.chichung.studio/webhook-test/NewProject_1',
-        payload,
-        'Project initialized and outline created!'
-      );
+      console.log('=== WEBHOOK RESPONSE ===');
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
 
-      // Handle the new response format
-      if (response) {
-        const webhookResponse = response as unknown as WebhookResponse;
+      if (!response.ok) {
+        console.log('Response not ok, throwing error');
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      let data = await response.json();
+      console.log('Response data:', data);
+
+      // Handle the response
+      if (data) {
+        const webhookResponse = data as unknown as WebhookResponse;
+        console.log('Processed webhook response:', webhookResponse);
         
         setWorkflowData(prev => ({
           ...prev,
@@ -205,13 +231,27 @@ const PodcastWorkflow: React.FC = () => {
             ].filter(Boolean)
           }
         }));
+        
+        console.log('=== SUCCESS - MOVING TO OUTLINE STEP ===');
         setCurrentStep('outline');
+        
+        toast({
+          title: "Success",
+          description: "Project initialized and outline created!",
+        });
       }
     } catch (error) {
-      // Error already handled in handleApiCall
+      console.error('=== WEBHOOK ERROR ===');
+      console.error('Error details:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to communicate with server',
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
       setLoadingMessage('');
+      console.log('=== WEBHOOK CALL COMPLETED ===');
     }
   };
 
