@@ -2,7 +2,7 @@
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { FileText, Pen, Book, Camera, CheckCircle } from 'lucide-react';
-import { WorkflowStep } from '@/types/podcast';
+import { WorkflowStepType } from '@/types/podcast';
 
 interface WorkflowStepsProps {
   currentStep: string;
