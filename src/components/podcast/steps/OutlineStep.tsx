@@ -24,58 +24,6 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
 }) => {
   const { toast } = useToast();
 
-  const handleSendToRunPromt = async () => {
-    console.log('=== SENDING TO RUNPROMT ENDPOINT ===');
-    console.log('URL: https://n8n.chichung.studio/webhook-test/RunPromt');
-    
-    const payload = {
-      action: "createScript",
-      payload: {
-        driveFolderId: workflowData.driveFolderId,
-        editedOutline: workflowData.outline,
-        grammarPoint: workflowData.grammarPoint,
-        projectDetails: workflowData.projectDetails
-      }
-    };
-
-    console.log('Payload:', JSON.stringify(payload, null, 2));
-
-    try {
-      const response = await fetch('https://n8n.chichung.studio/webhook-test/RunPromt', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      });
-
-      console.log('=== RUNPROMT RESPONSE ===');
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Response data:', data);
-
-      toast({
-        title: "Success",
-        description: "Data sent to RunPromt endpoint successfully!",
-      });
-
-    } catch (error) {
-      console.error('=== RUNPROMT ERROR ===');
-      console.error('Error details:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to send data to RunPromt endpoint',
-        variant: "destructive",
-      });
-    }
-  };
-
   // Show loading interface when processing
   if (isLoading) {
     return <LoadingState loadingMessage="Processing Your Outline" />;
@@ -127,7 +75,7 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
         </div>
       </div>
       <Button 
-        onClick={handleSendToRunPromt} 
+        onClick={handleCreateScript} 
         className="w-full" 
         size="lg" 
         disabled={isLoading}
