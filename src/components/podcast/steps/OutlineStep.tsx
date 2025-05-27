@@ -63,34 +63,39 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
       const data = await response.json();
       console.log('Response data:', data);
 
-      // Process the webhook response and convert it to script format
+      // Process all 7 parts from the webhook response
       const scriptData = [];
       
       if (data["Open Hook"]) {
-        scriptData.push({ "Opening Hook": data["Open Hook"] });
+        scriptData.push({ "Open Hook": data["Open Hook"] });
       }
       if (data["Part 1"]) {
-        scriptData.push({ "Part 1 - Problem": data["Part 1"] });
+        scriptData.push({ "Part 1": data["Part 1"] });
       }
       if (data["Part 2"]) {
-        scriptData.push({ "Part 2 - Cause": data["Part 2"] });
+        scriptData.push({ "Part 2": data["Part 2"] });
       }
       if (data["Part 3"]) {
-        scriptData.push({ "Part 3 - Solution": data["Part 3"] });
+        scriptData.push({ "Part 3": data["Part 3"] });
+      }
+      if (data["Vocab"]) {
+        scriptData.push({ "Vocab": data["Vocab"] });
+      }
+      if (data["Grammar"]) {
+        scriptData.push({ "Grammar": data["Grammar"] });
+      }
+      if (data["Summary"]) {
+        scriptData.push({ "Summary": data["Summary"] });
       }
 
-      console.log('Processed script data:', scriptData);
+      console.log('Processed script data with all 7 parts:', scriptData);
 
-      // Update the workflow data with the new script
-      // We need to access the parent component's setWorkflowData function
-      // Since we don't have direct access, we'll trigger the handleCreateScript with the data
-      
       // Store the script data in a way that can be accessed by the parent
       (window as any).newScriptData = scriptData;
 
       toast({
         title: "Success",
-        description: "Script generated successfully!",
+        description: "Script generated successfully with all 7 parts!",
       });
 
       // Call the original handleCreateScript function to advance to next step
