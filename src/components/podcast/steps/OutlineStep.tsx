@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Loader2, Book } from 'lucide-react';
@@ -23,9 +22,66 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
   isLoading
 }) => {
   const { toast } = useToast();
+  const [isLocalLoading, setIsLocalLoading] = useState(false);
+
+  const handleSendToRunPromt = async () => {
+    console.log('=== SENDING TO RUNPROMT ENDPOINT ===');
+    console.log('URL: https://n8n.chichung.studio/webhook-test/RunPromt');
+    
+    setIsLocalLoading(true);
+    
+    const payload = {
+      action: "createScript",
+      payload: {
+        driveFolderId: workflowData.driveFolderId,
+        editedOutline: workflowData.outline,
+        grammarPoint: workflowData.grammarPoint,
+        projectDetails: workflowData.projectDetails
+      }
+    };
+
+    console.log('Payload:', JSON.stringify(payload, null, 2));
+
+    try {
+      const response = await fetch('https://n8n.chichung.studio/webhook-test/RunPromt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      console.log('=== RUNPROMT RESPONSE ===');
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      toast({
+        title: "Success",
+        description: "Data sent to RunPromt endpoint successfully!",
+      });
+
+    } catch (error) {
+      console.error('=== RUNPROMT ERROR ===');
+      console.error('Error details:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to send data to RunPromt endpoint',
+        variant: "destructive",
+      });
+    } finally {
+      setIsLocalLoading(false);
+    }
+  };
 
   // Show loading interface when processing
-  if (isLoading) {
+  if (isLoading || isLocalLoading) {
     return <LoadingState loadingMessage="Processing Your Outline" />;
   }
 
@@ -75,12 +131,12 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
         </div>
       </div>
       <Button 
-        onClick={handleCreateScript} 
+        onClick={handleSendToRunPromt} 
         className="w-full" 
         size="lg" 
-        disabled={isLoading}
+        disabled={isLoading || isLocalLoading}
       >
-        {isLoading ? (
+        {isLoading || isLocalLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Sending to RunPromt...
