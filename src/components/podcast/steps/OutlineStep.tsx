@@ -63,35 +63,42 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
       const data = await response.json();
       console.log('Response data:', data);
 
-      // Process all 7 parts from the webhook response
-      const scriptData = [];
-      
-      if (data["Open Hook"]) {
-        scriptData.push({ "Open Hook": data["Open Hook"] });
-      }
-      if (data["Part 1"]) {
-        scriptData.push({ "Part 1": data["Part 1"] });
-      }
-      if (data["Part 2"]) {
-        scriptData.push({ "Part 2": data["Part 2"] });
-      }
-      if (data["Part 3"]) {
-        scriptData.push({ "Part 3": data["Part 3"] });
-      }
-      if (data["Vocab"]) {
-        scriptData.push({ "Vocab": data["Vocab"] });
-      }
-      if (data["Grammar"]) {
-        scriptData.push({ "Grammar": data["Grammar"] });
-      }
-      if (data["Summary"]) {
-        scriptData.push({ "Summary": data["Summary"] });
+      // Check if the response is already in the correct array format
+      if (Array.isArray(data)) {
+        console.log('Response is already an array, using directly:', data);
+        (window as any).newScriptData = data;
+      } else {
+        // If response is an object, convert it to the expected array format
+        console.log('Response is an object, converting to array format');
+        const scriptData = [];
+        
+        if (data["Open Hook"]) {
+          scriptData.push({ "Open Hook": data["Open Hook"] });
+        }
+        if (data["Part 1"]) {
+          scriptData.push({ "Part 1": data["Part 1"] });
+        }
+        if (data["Part 2"]) {
+          scriptData.push({ "Part 2": data["Part 2"] });
+        }
+        if (data["Part 3"]) {
+          scriptData.push({ "Part 3": data["Part 3"] });
+        }
+        if (data["Vocab"]) {
+          scriptData.push({ "Vocab": data["Vocab"] });
+        }
+        if (data["Grammar"]) {
+          scriptData.push({ "Grammar": data["Grammar"] });
+        }
+        if (data["Summary"]) {
+          scriptData.push({ "Summary": data["Summary"] });
+        }
+
+        console.log('Converted script data with all 7 parts:', scriptData);
+        (window as any).newScriptData = scriptData;
       }
 
-      console.log('Processed script data with all 7 parts:', scriptData);
-
-      // Store the script data in a way that can be accessed by the parent
-      (window as any).newScriptData = scriptData;
+      console.log('Final stored script data:', (window as any).newScriptData);
 
       toast({
         title: "Success",
