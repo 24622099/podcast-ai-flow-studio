@@ -20,47 +20,64 @@ export const ScriptStep: React.FC<ScriptStepProps> = ({
 }) => {
   console.log('ScriptStep rendering with script data:', workflowData.script);
   
+  // Define the expected 7 parts in order
+  const expectedParts = [
+    'Open Hook',
+    'Part 1', 
+    'Part 2',
+    'Part 3',
+    'Vocab',
+    'Grammar',
+    'Summary'
+  ];
+
+  // Create script parts array ensuring all 7 parts are present
+  const scriptParts = expectedParts.map((partName, index) => {
+    // Find existing data for this part
+    const existingPart = workflowData.script?.find(part => Object.keys(part)[0] === partName);
+    if (existingPart) {
+      return existingPart;
+    }
+    // Create empty part if not found
+    return { [partName]: '' };
+  });
+
+  console.log('Processed script parts for display:', scriptParts);
+  
   return (
     <div className="space-y-6">
       <div className="grid gap-4">
-        {Array.isArray(workflowData.script) && workflowData.script.length > 0 ? (
-          workflowData.script.map((scriptPart, index) => {
-            // Each object should have only one key-value pair
-            const key = Object.keys(scriptPart)[0];
-            const value = scriptPart[key];
-            
-            console.log(`Rendering script part ${index}:`, { key, value: value?.substring(0, 50) + '...' });
-            
-            return (
-              <div key={index} className="space-y-2">
-                <label className="text-sm font-medium">
-                  {key}
-                </label>
-                <Textarea
-                  value={value || ''}
-                  onChange={(e) => handleScriptChange(index, key, e.target.value)}
-                  className="min-h-[100px]"
-                />
-              </div>
-            );
-          })
-        ) : (
-          <div className="p-4 text-center text-gray-500">
-            No script content available. Please generate a script first.
-          </div>
-        )}
+        {scriptParts.map((scriptPart, index) => {
+          const key = Object.keys(scriptPart)[0];
+          const value = scriptPart[key];
+          
+          console.log(`Rendering script part ${index}:`, { key, value: value?.substring(0, 50) + '...' });
+          
+          return (
+            <div key={index} className="space-y-2">
+              <label className="text-sm font-medium">
+                {key}
+              </label>
+              <Textarea
+                value={value || ''}
+                onChange={(e) => handleScriptChange(index, key, e.target.value)}
+                className="min-h-[100px]"
+                placeholder={`Enter content for ${key}...`}
+              />
+            </div>
+          );
+        })}
       </div>
       
-      {/* Debug info to help troubleshoot */}
       <div className="text-sm text-gray-500">
-        Total script parts: {workflowData.script?.length || 0}
+        Total script parts: {scriptParts.length}/7
       </div>
       
       <Button 
         onClick={handleConfirmScript} 
         className="w-full" 
         size="lg" 
-        disabled={isLoading || !workflowData.script || workflowData.script.length === 0}
+        disabled={isLoading}
       >
         {isLoading ? (
           <>
