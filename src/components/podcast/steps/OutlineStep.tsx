@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Book } from 'lucide-react';
 import { WorkflowData } from '@/types/podcast';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingState } from '../LoadingState';
 
 interface OutlineStepProps {
   workflowData: WorkflowData;
@@ -77,26 +78,7 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
 
   // Show loading interface when processing
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 space-y-6">
-        <div className="relative w-32 h-32">
-          {/* Rotating outer circle */}
-          <div className="absolute inset-0 rounded-full border-4 border-t-blue-600 border-blue-200 animate-spin"></div>
-          
-          {/* Central book icon */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Book className="h-16 w-16 text-blue-600 animate-pulse" />
-          </div>
-        </div>
-        
-        <div className="space-y-2 text-center">
-          <h3 className="text-xl font-medium text-gray-800">Processing Your Outline</h3>
-          <p className="text-gray-500">
-            Sending data to n8n and waiting for response...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingState loadingMessage="Processing Your Outline" />;
   }
 
   return (
