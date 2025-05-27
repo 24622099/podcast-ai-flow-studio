@@ -18,6 +18,8 @@ export const ScriptStep: React.FC<ScriptStepProps> = ({
   handleConfirmScript,
   isLoading
 }) => {
+  console.log('ScriptStep rendering with script data:', workflowData.script);
+  
   return (
     <div className="space-y-6">
       <div className="grid gap-4">
@@ -27,13 +29,15 @@ export const ScriptStep: React.FC<ScriptStepProps> = ({
             const key = Object.keys(scriptPart)[0];
             const value = scriptPart[key];
             
+            console.log(`Rendering script part ${index}:`, { key, value: value?.substring(0, 50) + '...' });
+            
             return (
               <div key={index} className="space-y-2">
-                <label className="text-sm font-medium capitalize">
+                <label className="text-sm font-medium">
                   {key}
                 </label>
                 <Textarea
-                  value={value}
+                  value={value || ''}
                   onChange={(e) => handleScriptChange(index, key, e.target.value)}
                   className="min-h-[100px]"
                 />
@@ -46,6 +50,12 @@ export const ScriptStep: React.FC<ScriptStepProps> = ({
           </div>
         )}
       </div>
+      
+      {/* Debug info to help troubleshoot */}
+      <div className="text-sm text-gray-500">
+        Total script parts: {workflowData.script?.length || 0}
+      </div>
+      
       <Button 
         onClick={handleConfirmScript} 
         className="w-full" 
