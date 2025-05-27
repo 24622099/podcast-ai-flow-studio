@@ -63,12 +63,37 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
       const data = await response.json();
       console.log('Response data:', data);
 
+      // Process the webhook response and convert it to script format
+      const scriptData = [];
+      
+      if (data["Open Hook"]) {
+        scriptData.push({ "Opening Hook": data["Open Hook"] });
+      }
+      if (data["Part 1"]) {
+        scriptData.push({ "Part 1 - Problem": data["Part 1"] });
+      }
+      if (data["Part 2"]) {
+        scriptData.push({ "Part 2 - Cause": data["Part 2"] });
+      }
+      if (data["Part 3"]) {
+        scriptData.push({ "Part 3 - Solution": data["Part 3"] });
+      }
+
+      console.log('Processed script data:', scriptData);
+
+      // Update the workflow data with the new script
+      // We need to access the parent component's setWorkflowData function
+      // Since we don't have direct access, we'll trigger the handleCreateScript with the data
+      
+      // Store the script data in a way that can be accessed by the parent
+      (window as any).newScriptData = scriptData;
+
       toast({
         title: "Success",
         description: "Script generated successfully!",
       });
 
-      // Call the original handleCreateScript function to process the response and advance to next step
+      // Call the original handleCreateScript function to advance to next step
       handleCreateScript();
 
     } catch (error) {
@@ -143,10 +168,10 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
         {isLoading || isLocalLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Sending to RunPromt...
+            Generating Script...
           </>
         ) : (
-          'Send to RunPromt Endpoint'
+          'Generate Script'
         )}
       </Button>
     </div>

@@ -274,6 +274,28 @@ const PodcastWorkflow: React.FC = () => {
   };
 
   const handleCreateScript = async () => {
+    // Check if we have new script data from the webhook
+    const newScriptData = (window as any).newScriptData;
+    
+    if (newScriptData) {
+      console.log('Using new script data from webhook:', newScriptData);
+      
+      // Update workflow data with the new script
+      setWorkflowData(prev => ({
+        ...prev,
+        script: newScriptData
+      }));
+      
+      // Clear the temporary data
+      delete (window as any).newScriptData;
+      
+      // Advance to script step
+      setCurrentStep('script');
+      
+      return;
+    }
+
+    // Fallback to original API call if no new data
     setIsLoading(true);
     setLoadingMessage('Generating detailed script...');
 
