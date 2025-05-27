@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -64,8 +65,11 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
 
       toast({
         title: "Success",
-        description: "Data sent to RunPromt endpoint successfully!",
+        description: "Script generated successfully!",
       });
+
+      // Call the original handleCreateScript function to process the response and advance to next step
+      handleCreateScript();
 
     } catch (error) {
       console.error('=== RUNPROMT ERROR ===');
