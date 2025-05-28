@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -63,7 +62,7 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
       const data = await response.json();
       console.log('Raw response data:', data);
 
-      // Create script data array with all 7 parts from the response
+      // Dữ liệu đã là object, truy xuất trực tiếp các trường
       const scriptData = [
         { "Open Hook": data["Open Hook"] || '' },
         { "Part 1": data["Part 1"] || '' },

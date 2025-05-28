@@ -1,4 +1,3 @@
-
 export interface WebhookResponse {
   "Project Name": string;
   "Keyword ID": string;
