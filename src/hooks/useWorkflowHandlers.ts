@@ -66,7 +66,7 @@ export const useWorkflowHandlers = (
     };
 
     try {
-      const response = await fetch('https://n8n.chichung.studio/webhook-test/NewProject_1', {
+      const response = await fetch('https://n8n.chichung.studio/webhook/NewProject_1', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ export const useWorkflowHandlers = (
       };
 
       const response = await handleApiCall(
-        'https://n8n.chichung.studio/webhook-test/RunPromt',
+        'https://n8n.chichung.studio/webhook/RunPromt',
         payload,
         'Script has been generated!'
       );
