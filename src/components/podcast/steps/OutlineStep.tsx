@@ -26,7 +26,7 @@ export const OutlineStep: React.FC<OutlineStepProps> = ({
 
   const handleSendToRunPromt = async () => {
     console.log('=== SENDING TO RUNPROMT ENDPOINT ===');
-    console.log('URL: https://n8n.chichung.studio/webhook-test/RunPromt');
+    console.log('URL: https://n8n.chichung.studio/webhook/RunPromt');
     
     setIsLocalLoading(true);
     
